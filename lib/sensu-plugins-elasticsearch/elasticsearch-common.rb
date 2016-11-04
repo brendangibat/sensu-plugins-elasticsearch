@@ -28,7 +28,7 @@ module ElasticsearchCommon
     transport_class = if config[:transport] == 'AWS'
                         Elasticsearch::Transport::Transport::HTTP::AWS
                       else
-                        Elasticsearch::Transport::Client.DEFAULT_TRANSPORT_CLASS
+                        Elasticsearch::Transport::Client::DEFAULT_TRANSPORT_CLASS
                       end
 
     host = {
@@ -44,6 +44,7 @@ module ElasticsearchCommon
       host[:scheme] = 'https' unless config[:scheme]
     end
 
+    if transport_class !=
     @client ||= Elasticsearch::Client.new(transport_class: transport_class, hosts: [host], region: config[:region])
   end
 end
