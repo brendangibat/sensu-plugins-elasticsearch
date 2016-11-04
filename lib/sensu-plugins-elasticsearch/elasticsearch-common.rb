@@ -25,10 +25,11 @@ module ElasticsearchCommon
   end
 
   def client
-    transport_class = nil
-    if config[:transport] == 'AWS'
-      transport_class = Elasticsearch::Transport::Transport::HTTP::AWS
-    end
+    transport_class = if config[:transport] == 'AWS'
+                        Elasticsearch::Transport::Transport::HTTP::AWS
+                      else
+                        Elasticsearch::Transport::Client.DEFAULT_TRANSPORT_CLASS
+                      end
 
     host = {
       host:               config[:host],
