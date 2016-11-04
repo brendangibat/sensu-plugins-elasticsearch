@@ -44,7 +44,6 @@ module ElasticsearchCommon
       host[:scheme] = 'https' unless config[:scheme]
     end
 
-    if transport_class !=
     @client ||= Elasticsearch::Client.new(transport_class: transport_class, hosts: [host], region: config[:region])
   end
 end
