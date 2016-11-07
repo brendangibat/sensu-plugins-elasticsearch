@@ -30,20 +30,25 @@ module ElasticsearchCommon
                       else
                         Elasticsearch::Transport::Client::DEFAULT_TRANSPORT_CLASS
                       end
+    url = ENV.fetch('ELASTICSEARCH_URL', nil)
 
-    host = {
-      host:               config[:host],
-      port:               config[:port],
-      request_timeout:    config[:timeout],
-      scheme:             config[:scheme]
-    }
+    if url.nil?
+      host = {
+        host:               config[:host],
+        port:               config[:port],
+        request_timeout:    config[:timeout],
+        scheme:             config[:scheme]
+      }
 
-    if !config[:user].nil? && !config[:password].nil?
-      host[:user] = config[:user]
-      host[:password] = config[:password]
-      host[:scheme] = 'https' unless config[:scheme]
+      if !config[:user].nil? && !config[:password].nil?
+        host[:user] = config[:user]
+        host[:password] = config[:password]
+        host[:scheme] = 'https' unless config[:scheme]
+      end
+
+      @client ||= Elasticsearch::Client.new(transport_class: transport_class, hosts: [host], region: config[:region])
+    else
+      @client ||= Elasticsearch::Client.new(transport_class: transport_class, url: url, region: config[:region])
     end
-
-    @client ||= Elasticsearch::Client.new(transport_class: transport_class, hosts: [host], region: config[:region])
   end
 end
