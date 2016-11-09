@@ -25,14 +25,15 @@ module ElasticsearchCommon
   end
 
   def client
+    puts(config)
+    puts
+    puts
     transport_class = if config[:transport] == 'AWS'
                         Elasticsearch::Transport::Transport::HTTP::AWS
                       else
                         Elasticsearch::Transport::Client::DEFAULT_TRANSPORT_CLASS
                       end
-    url = ENV.fetch('ELASTICSEARCH_URL', nil)
-
-    if url.nil?
+    if !config[:host].nil?
       host = {
         host:               config[:host],
         port:               config[:port],
@@ -45,9 +46,9 @@ module ElasticsearchCommon
         host[:password] = config[:password]
         host[:scheme] = 'https' unless config[:scheme]
       end
-
       @client ||= Elasticsearch::Client.new(transport_class: transport_class, hosts: [host], region: config[:region])
     else
+      url = ENV.fetch('ELASTICSEARCH_URL', 'localhost')
       @client ||= Elasticsearch::Client.new(transport_class: transport_class, url: url, region: config[:region])
     end
   end

@@ -37,8 +37,7 @@ class ESCircuitBreaker < Sensu::Plugin::Check::CLI
   option :host,
          description: 'Elasticsearch host',
          short: '-h HOST',
-         long: '--host HOST',
-         default: 'localhost'
+         long: '--host HOST'
 
   option :port,
          description: 'Elasticsearch port',

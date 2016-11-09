@@ -46,8 +46,7 @@ class ESMetrics < Sensu::Plugin::Metric::CLI::Graphite
   option :host,
          description: 'Elasticsearch server host.',
          short: '-h HOST',
-         long: '--host HOST',
-         default: 'localhost'
+         long: '--host HOST'
 
   option :port,
          description: 'Elasticsearch port',
