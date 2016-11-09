@@ -25,9 +25,6 @@ module ElasticsearchCommon
   end
 
   def client
-    puts(config)
-    puts
-    puts
     transport_class = if config[:transport] == 'AWS'
                         Elasticsearch::Transport::Transport::HTTP::AWS
                       else
