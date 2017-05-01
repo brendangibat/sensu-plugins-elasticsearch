@@ -3,15 +3,33 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachangelog.com/)
 
-## [1.0.1] - 2016-10-03
+## [Unreleased]
+### Fixed
+- metrics-es-cluster.rb: Check to see if cluster key exists in transient_settings before trying to use it. (@RAR)
+
+## [1.1.3] - 2017-01-04
+### Fixed
+- metrics-es-cluster/metrics-es-node-graphite.rb: Fix Elasticsearch 5.0 compatability (@terjesannum)
+
+## [1.1.2] - 2016-12-29
+### Fixed
+- Fixed metrics-es-node-graphite.rb was not compatible with Elasticsearch 5.0 (@woqer)
+- Make query lib compatible with ES 5+ (@jackfengji)
+
+## [1.1.1] - 2016-11-26
+### Fixed
+- Fixed check-es-file-descriptors.rb was not compatible with Elasticsearch 5.0 (@woqer)
+
+## [1.1.0] - 2016-11-14
+### Changed
+- Changed check-es-heap.rb to be compatible with Elasticsearch 5.0 (@christianherro)
+
 ### Added
 - Added check-es-query-ratio.tb to support ratio-type checks (@alcasim)
-
-## [Unreleased]
-### Added
 - Added direct support to check-es-indices-size.rb to delete indicies without the handler-es-delete-indices.rb
+
 ### Fixed
-- aws-sdk 2.5.x breaks aws-es-transport
+- aws-sdk 2.5.x breaks aws-es-transport (@sstarcher)
 - check-es-indicies-size - fix array mapping by (@nyxcharon)
 
 ## [1.0.0] - 2016-07-29
@@ -119,7 +137,11 @@ This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachang
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.3...HEAD
+[1.1.3]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.2...1.1.3
+[1.1.2]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/0.5.3...1.0.0
 [0.5.3]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/0.4.3...0.5.3
 [0.4.3]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/0.4.2...0.4.3
