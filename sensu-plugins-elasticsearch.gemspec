@@ -13,10 +13,10 @@ Gem::Specification.new do |s|
   s.description            = 'This plugin provides native ElasticSearch instrumentation
                               for monitoring and metrics collection, including:
                               service health and metrics for cluster, node, and more.'
-  s.email                  = '<sensu-users@googlegroups.com>'
+  s.email                  = '<leon.gibat@gmail.com>'
   s.executables            = Dir.glob('bin/**/*.rb').map { |file| File.basename(file) }
-  s.files                  = Dir.glob('{bin,lib}/**/*') + %w(LICENSE README.md CHANGELOG.md)
-  s.homepage               = 'https://github.com/sensu-plugins/sensu-plugins-elasticsearch'
+  s.files                  = Dir.glob('{bin,lib}/**/*') + %w[(LICENSE README.md CHANGELOG.md)]
+  s.homepage               = 'https://github.com/brendangibat/sensu-plugins-elasticsearch'
   s.license                = 'MIT'
   s.metadata               = { 'maintainer'         => 'sensu-plugin',
                                'development_status' => 'active',
