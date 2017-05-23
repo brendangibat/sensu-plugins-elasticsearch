@@ -14,7 +14,6 @@
 # DEPENDENCIES:
 #   gem: sensu-plugin
 #   gem: elasticsearch
-#   gem: aws_es_transport
 #
 # USAGE:
 #   Checks against the ElasticSearch api for cluster health using the
@@ -30,7 +29,6 @@
 
 require 'sensu-plugin/check/cli'
 require 'elasticsearch'
-require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 #
@@ -38,14 +36,6 @@ require 'sensu-plugins-elasticsearch'
 #
 class ESClusterHealth < Sensu::Plugin::Check::CLI
   include ElasticsearchCommon
-
-  option :transport,
-         long: '--transport TRANSPORT',
-         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
-
-  option :region,
-         long: '--region REGION',
-         description: 'Region (necessary for AWS Transport)'
 
   option :host,
          description: 'Elasticsearch host',

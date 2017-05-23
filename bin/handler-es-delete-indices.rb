@@ -14,7 +14,6 @@
 # DEPENDENCIES:
 #   gem: sensu-plugin
 #   gem: elasticsearch
-#   gem: aws_es_transport
 #
 # USAGE:
 #   Deletes the indices given to it from a check output and a configured
@@ -30,19 +29,10 @@
 
 require 'sensu-handler'
 require 'elasticsearch'
-require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 class ESIndexCleanup < Sensu::Handler
   include ElasticsearchCommon
-
-  option :transport,
-         long: '--transport TRANSPORT',
-         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
-
-  option :region,
-         long: '--region REGION',
-         description: 'Region (necessary for AWS Transport)'
 
   option :host,
          description: 'Elasticsearch host',

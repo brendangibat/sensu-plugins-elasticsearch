@@ -36,7 +36,6 @@
 require 'sensu-plugin/check/cli'
 require 'elasticsearch'
 require 'time'
-require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 #
@@ -52,14 +51,6 @@ class ESQueryExists < Sensu::Plugin::Check::CLI
          Accepts wildcards',
          short: '-i INDEX',
          long: '--indices INDEX'
-
-  option :transport,
-         long: '--transport TRANSPORT',
-         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
-
-  option :region,
-         long: '--region REGION',
-         description: 'Region (necessary for AWS Transport)'
 
   option :types,
          description: 'Elasticsearch types to limit searches to, comma separated list.',

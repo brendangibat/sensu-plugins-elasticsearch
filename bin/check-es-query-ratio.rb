@@ -14,7 +14,6 @@
 # DEPENDENCIES:
 #   gem: sensu-plugin
 #   gem: elasticsearch
-#   gem: aws_es_transport
 #
 # USAGE:
 #   This example checks the ratio from the count of two different queries
@@ -38,7 +37,6 @@ require 'sensu-plugin/check/cli'
 require 'elasticsearch'
 require 'time'
 require 'uri'
-require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 #
@@ -54,14 +52,6 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
          Accepts wildcards',
          short: '-i INDEX',
          long: '--indices INDEX'
-
-  option :transport,
-         long: '--transport TRANSPORT',
-         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
-
-  option :region,
-         long: '--region REGION',
-         description: 'Region (necessary for AWS Transport)'
 
   option :types,
          description: 'Elasticsearch types to limit searches to, comma separated list.',
@@ -252,7 +242,7 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
     dividend = client.count(build_request_options)
     config[:query] = divisor_query
     divisor = client.count(build_request_options)
-    if divisor == 0
+    if divisor.zero?
       critical 'Divisor is 0, ratio check cannot be performed, raising an alert'
     else
       response = {}
@@ -272,18 +262,6 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
       warning "Query count (#{response['count']}) was above warning threshold. #{kibana_info}"
     else
       ok "Query count (#{response['count']}) was ok"
-    end
-  rescue Elasticsearch::Transport::Transport::Errors::NotFound
-    if config[:invert]
-      if response['count'] < config[:crit]
-        critical "Query count (#{response['count']}) was below critical threshold. #{kibana_info}"
-      elsif response['count'] < config[:warn]
-        warning "Query count (#{response['count']}) was below warning threshold. #{kibana_info}"
-      else
-        ok "Query count (#{response['count']}) was ok"
-      end
-    else
-      ok 'No results found, count was below thresholds'
     end
   end
 end

@@ -15,7 +15,6 @@
 # DEPENDENCIES:
 #   gem: sensu-plugin
 #   gem: elasticsearch
-#   gem: aws_es_transport
 #
 # USAGE:
 #   ./check-es-indices-sizes.rb -h localhost -p 9200 -m 155000
@@ -30,19 +29,10 @@
 
 require 'sensu-plugin/check/cli'
 require 'elasticsearch'
-require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 class ESCheckIndicesSizes < Sensu::Plugin::Check::CLI
   include ElasticsearchCommon
-
-  option :transport,
-         long: '--transport TRANSPORT',
-         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
-
-  option :region,
-         long: '--region REGION',
-         description: 'Region (necessary for AWS Transport)'
 
   option :host,
          description: 'Elasticsearch host',
