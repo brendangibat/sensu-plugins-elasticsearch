@@ -1,9 +1,63 @@
-#Change Log
+# Change Log
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachangelog.com/)
 
 ## [Unreleased]
+
+## [1.7.1] - 2017-09-18
+### Fixed
+- bin/check-es-cluster-health.rb and bin/check-es-cluster-status.rb fixed --alert-status failing to alert and allow absent value to alert on any status (@rwky)
+
+## [1.7.0] - 2017-09-16
+### Changed
+- check-es-cluster-health.rb: changed `--alert_status` to `--alert-status` to be more consistent with conventions, restrict `--alert-status` to the actual acceptable options. (@majormoses)
+- check-es-cluster-status.rb: changed `--alert_status` to `--alert-status` to be more consistent with conventions, restrict `--alert-status` to the actual acceptable options. (@majormoses)
+
+### Added
+- bin/check-es-cluster-health.rb: added option to alert only during a yellow state or only during a red state (@barrebre)
+- bin/check-es-cluster-status.rb: added option to alert only during a yellow state or only during a red state (@barrebre)
+
+## [1.6.1] - 2017-08-24
+### Fixed
+- bin/check-es-query-ratio.rb: added support to define float thresholds (@cgarciaarano)
+
+## [1.6.0] - 2017-08-18
+### Added
+- bin/check-es-query-ratio.rb: added option to avoid triggering alert if divisor is 0 (@cgarciaarano)
+
+## [1.5.3] - 2017-08-17
+### Fixed
+- bin/check-es-query-ratio.rb: ratio is performed by a float division, instead of integer division (@cgarciaarano)
+
+## [1.5.2] - 2017-08-12
+### Fixed
+- check-es-query-ratio.rb: Fix when divisor = 0 (@cgarciaarano)
+## [1.5.1] - 2017-08-03
+### Fixed
+- bin/metrics-es-cluster.rb: missing data no longer causes invalid metrics by defaulting to 0 (@TheKevJames)
+
+## [1.5.0] - 2017-07-26
+### Added
+- check-es-query-average.rb: check of average result by field (@ilavender)
+
+## [1.4.1] - 2017-07-13
+### Fixed
+- use timestamp_field from config for sorting in Kibana (@osgida)
+
+## [1.4.0] - 2017-07-04
+### Added
+- added ruby 2.4 testing (@majormoses)
+- check-es-shard-allocation-status.rb: HTTP Basic Auth support added  (@cihangirbesiktas)
+- check-es-shard-allocation-status.rb: timeout option for rest calls (@cihangirbesiktas)
+
+### Fixed
+- PR template spell "compatibility" correctly. (@majormoses)
+
+## [1.3.1] - 2017-05-22
+### Fixed
+- Conversion of previous_months option to Seconds (@guptaishabh)
+
 ## [1.3.0] - 2017-05-08
 ### Fixed
 - Use strict Base64 encoding to fix base64 encoding/netty issue (@msblum)
@@ -145,7 +199,19 @@ This CHANGELOG follows the format listed at [Keep A Changelog](http://keepachang
 ### Added
 - initial release
 
-[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.3.0...HEAD
+
+[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.7.1...HEAD
+[1.7.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.7.0...1.7.1
+[1.7.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.6.1...1.7.0
+[1.6.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.6.0...1.6.1
+[1.6.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.5.3...1.6.0
+[1.5.3]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.5.2...1.5.3
+[1.5.2]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.5.1...1.5.2
+[1.5.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.5.0...1.5.1
+[1.5.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.4.1...1.5.0
+[1.4.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.4.0...1.4.1
+[1.4.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.3.1...1.4.0
+[1.3.1]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.2.0...1.3.0
 [1.2.0]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.3...1.2.0
 [1.1.3]: https://github.com/sensu-plugins/sensu-plugins-elasticsearch/compare/1.1.2...1.1.3

@@ -82,6 +82,12 @@ class ESClusterStatus < Sensu::Plugin::Check::CLI
          short: '-e',
          long: '--https'
 
+  option :alert_status,
+         description: 'Only alert when status matches given RED/YELLOW/GREEN or if blank all statuses',
+         long: '--alert-status STATUS',
+         default: '',
+         in: ['RED', 'YELLOW', 'GREEN', '']
+
   def get_es_resource(resource)
     headers = {}
     if config[:user] && config[:password]
@@ -138,9 +144,17 @@ class ESClusterStatus < Sensu::Plugin::Check::CLI
       when 'green'
         ok 'Cluster is green'
       when 'yellow'
-        warning 'Cluster is yellow'
+        if ['YELLOW', ''].include? config[:alert_status]
+          warning 'Cluster state is Yellow'
+        else
+          ok 'Not alerting on yellow'
+        end
       when 'red'
-        critical 'Cluster is red'
+        if ['RED', ''].include? config[:alert_status]
+          critical 'Cluster state is Red'
+        else
+          ok 'Not alerting on red'
+        end
       end
     else
       ok 'Not the master'

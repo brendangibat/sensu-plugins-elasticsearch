@@ -3,7 +3,7 @@
 #   check-es-query
 #
 # DESCRIPTION:
-#   This plugin checks ratio between results of two Elasticsearch queries
+#   This plugin checks an ElasticSearch query.
 #
 # OUTPUT:
 #   plain text
@@ -14,21 +14,19 @@
 # DEPENDENCIES:
 #   gem: sensu-plugin
 #   gem: elasticsearch
+#   gem: aws_es_transport
 #
 # USAGE:
-#   This example checks the ratio from the count of two different queries
-#   as dividend and divisor at the host elasticsearch.service.consul for the past 90 minutes
-#   will warn if percentage is lower than 10 and critical if percentage is lower than 5
-#   (The invert flag warns if results are _below_ the critical and warning values)
-#   check-es-query-ratio.rb -h elasticsearch.service.consul -Q "orders:*"
-#     -q "orders:OK" --invert --types special_type -d 'logging-%Y.%m.%d'
-#     --minutes-previous 90 -p 9200 -c 5 -w 10
+#   This example checks that the average of the field "serve_time" in logs matching a query of
+#       anything (*) at the host elasticsearch.service.consul for the past 90 minutes
+#       will warn if above 120ms and go critical if the result average is above 250ms
+#   check-es-query-average.rb -h elasticsearch.service.consul -q "*"
+#           --types special_type -d 'logging-%Y.%m.%d' --minutes-previous 90 -p 9200 -c 0.250 -w 0.120 -a serve_time
 #
-#
-# NOTES:
+# NOTES:
 #
 # LICENSE:
-#
+#   Itamar Lavender <itamar.lavender@gmail.com>
 #   Released under the same terms as Sensu (the MIT license); see LICENSE
 #   for details.
 #
@@ -37,12 +35,13 @@ require 'sensu-plugin/check/cli'
 require 'elasticsearch'
 require 'time'
 require 'uri'
+require 'aws_es_transport'
 require 'sensu-plugins-elasticsearch'
 
 #
 # ES Query Count
 #
-class ESQueryRatio < Sensu::Plugin::Check::CLI
+class ESQueryAverage < Sensu::Plugin::Check::CLI
   include ElasticsearchCommon
 
   option :index,
@@ -52,6 +51,14 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
          Accepts wildcards',
          short: '-i INDEX',
          long: '--indices INDEX'
+
+  option :transport,
+         long: '--transport TRANSPORT',
+         description: 'Transport to use to communicate with ES. Use "AWS" for signed AWS transports.'
+
+  option :region,
+         long: '--region REGION',
+         description: 'Region (necessary for AWS Transport)'
 
   option :types,
          description: 'Elasticsearch types to limit searches to, comma separated list.',
@@ -129,22 +136,30 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
          required: false,
          default: 'message'
 
-  option :dividend,
-         description: 'Elasticsearch query where percentage is calculated for',
-         short: '-Q QUERY',
-         long: '--dividend QUERY',
-         required: true
-
-  option :divisor,
-         description: 'Elasticsearch query where percentage is calculated from',
+  option :query,
+         description: 'Elasticsearch query',
          short: '-q QUERY',
-         long: '--divisor QUERY',
+         long: '--query QUERY',
+         required: false
+
+  option :aggr,
+         description: 'Elasticsearch query aggr',
+         long: '--aggr',
+         boolean: true,
+         required: false,
+         default: true
+
+  option :aggr_field,
+         description: 'Elasticsearch query field to aggregate and average from',
+         short: '-a FIELD',
+         long: '--aggr-field FIELD',
          required: true
 
   option :host,
          description: 'Elasticsearch host',
          short: '-h HOST',
-         long: '--host HOST'
+         long: '--host HOST',
+         default: 'localhost'
 
   option :port,
          description: 'Elasticsearch port',
@@ -178,14 +193,14 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
   option :warn,
          short: '-w N',
          long: '--warn N',
-         description: 'Result count WARNING threshold',
+         description: 'Result average WARNING threshold',
          proc: proc(&:to_f),
          default: 0
 
   option :crit,
          short: '-c N',
          long: '--crit N',
-         description: 'Result count CRITICAL threshold',
+         description: 'Result average CRITICAL threshold',
          proc: proc(&:to_f),
          default: 0
 
@@ -193,13 +208,6 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
          long: '--invert',
          description: 'Invert thresholds',
          boolean: true
-
-  option :divisor_zero_ok,
-         short: '-z',
-         long: '--zero',
-         description: 'Division by 0 returns OK',
-         boolean: true,
-         default: false
 
   option :kibana_url,
          long: '--kibana-url KIBANA_URL',
@@ -236,42 +244,38 @@ class ESQueryRatio < Sensu::Plugin::Check::CLI
       "#{URI.escape(Time.at(start_time).utc.strftime kibana_date_format)}',mode:absolute,to:'" \
       "#{URI.escape(Time.at(end_time).utc.strftime kibana_date_format)}'))&_a=(columns:!(_source),index:" \
       "#{URI.escape(index)},interval:auto,query:(query_string:(analyze_wildcard:!t,query:'" \
-      "#{URI.escape(config[:query])}')),sort:!('#{config[:timestamp_field]}',desc))&dummy"
+      "#{URI.escape(config[:query])}')),sort:!('@timestamp',desc))&dummy"
     end
   end
 
   def run
-    dividend_query = config[:dividend]
-    divisor_query = config[:divisor]
-    config.delete(:dividend)
-    config.delete(:divisor)
-    config[:query] = dividend_query
-    dividend = client.count(build_request_options)
-    config[:query] = divisor_query
-    divisor = client.count(build_request_options)
-    divisor_zero_ok = config[:divisor_zero_ok]
-    if divisor_zero_ok && divisor['count'].zero?
-      ok 'Divisor is 0, ratio check cannot be performed, failing safe with ok'
-    elsif divisor['count'].zero?
-      critical 'Divisor is 0, ratio check cannot be performed, raising an alert'
-    else
-      response = {}
-      response['count'] = (dividend['count'].to_f / divisor['count'])
-    end
+    response = client.search(build_request_options)
     if config[:invert]
-      if response['count'] < config[:crit]
-        critical "Query count (#{response['count']}) was below critical threshold. #{kibana_info}"
-      elsif response['count'] < config[:warn]
-        warning "Query count (#{response['count']}) was below warning threshold. #{kibana_info}"
+      if response['aggregations']['average']['value'] < config[:crit]
+        critical "Query average (#{response['aggregations']['average']['value']}) was below critical threshold. #{kibana_info}"
+      elsif response['aggregations']['average']['value'] < config[:warn]
+        warning "Query average (#{response['aggregations']['average']['value']}) was below warning threshold. #{kibana_info}"
       else
-        ok "Query count (#{response['count']}) was ok"
+        ok "Query average (#{response['aggregations']['average']['value']}) was ok"
       end
-    elsif response['count'] > config[:crit]
-      critical "Query count (#{response['count']}) was above critical threshold. #{kibana_info}"
-    elsif response['count'] > config[:warn]
-      warning "Query count (#{response['count']}) was above warning threshold. #{kibana_info}"
+    elsif response['aggregations']['average']['value'] > config[:crit]
+      critical "Query average (#{response['aggregations']['average']['value']}) was above critical threshold. #{kibana_info}"
+    elsif response['aggregations']['average']['value'] > config[:warn]
+      warning "Query average (#{response['aggregations']['average']['value']}) was above warning threshold. #{kibana_info}"
     else
-      ok "Query count (#{response['count']}) was ok"
+      ok "Query average (#{response['aggregations']['average']['value']}) was ok"
+    end
+  rescue Elasticsearch::Transport::Transport::Errors::NotFound
+    if config[:invert]
+      if response['aggregations']['average']['value'] < config[:crit]
+        critical "Query average (#{response['aggregations']['average']['value']}) was below critical threshold. #{kibana_info}"
+      elsif response['aggregations']['average']['value'] < config[:warn]
+        warning "Query average (#{response['aggregations']['average']['value']}) was below warning threshold. #{kibana_info}"
+      else
+        ok "Query average (#{response['aggregations']['average']['value']}) was ok"
+      end
+    else
+      ok 'No results found, average was below thresholds'
     end
   end
 end
